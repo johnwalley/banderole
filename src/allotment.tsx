@@ -91,6 +91,7 @@ Pane.displayName = "Allotment.Pane";
 export type AllotmentHandle = {
   reset: () => void;
   resize: (sizes: number[]) => void;
+  getContainerSize: () => { width: number; height: number };
 };
 
 export type AllotmentProps = {
@@ -150,6 +151,10 @@ const Allotment = forwardRef<AllotmentHandle, AllotmentProps>(
     const splitViewRef = useRef<SplitView | null>(null);
     const splitViewViewRef = useRef(new Map<React.Key, HTMLElement>());
     const layoutService = useRef<LayoutService>(new LayoutService());
+    const containerSizeRef = useRef<{ width: number; height: number }>({
+      height: 0,
+      width: 0,
+    });
     const views = useRef<PaneView[]>([]);
 
     const [dimensionsInitialized, setDimensionsInitialized] = useState(false);
@@ -192,6 +197,7 @@ const Allotment = forwardRef<AllotmentHandle, AllotmentProps>(
       resize: (sizes) => {
         splitViewRef.current?.resizeViews(sizes);
       },
+      getContainerSize: () => ({ ...containerSizeRef.current }),
     }));
 
     useIsomorphicLayoutEffect(() => {
@@ -471,6 +477,8 @@ const Allotment = forwardRef<AllotmentHandle, AllotmentProps>(
       ref: containerRef,
       onResize: ({ width, height }) => {
         if (width && height) {
+          containerSizeRef.current.height = height;
+          containerSizeRef.current.width = width;
           splitViewRef.current?.layout(vertical ? height : width);
           layoutService.current.setSize(vertical ? height : width);
           setDimensionsInitialized(true);
